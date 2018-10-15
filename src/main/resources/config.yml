@@ -1,0 +1,128 @@
+# Default config file for BankSystem
+# Author: Twiistrz
+# Version: 1.8.7-SNAPSHOT
+
+# If you want to use special characters in this document, such as accented letters, you MUST save the file as UTF-8, not ANSI.
+# If you receive an error when BankSystem loads, ensure that:
+#   - No tabs are present: YAML only allows spaces
+#   - Indents are correct: YAML hierarchy is based entirely on indentation
+#   - You have "escaped" all apostrophes in your text: If you want to write "don't", for example, write "don''t" instead (note the doubled apostrophe)
+#   - Text with symbols is enclosed in single or double quotation marks
+
+############################################################
+# +------------------------------------------------------+ #
+# |                       Database                       | #
+# +------------------------------------------------------+ #
+############################################################
+
+DataSource:
+    # What type of database do you want to use?
+    # Valid values: FlatFile, MYSQL
+    backend: FlatFile
+    # Database host address
+    mySQLHost: '0.0.0.0'
+    # Database port
+    mySQLPort: '3306'
+    # Connect to MySQL database over SSL
+    mySQLUseSSL: false
+    # Username to connect to the MySQL database
+    mySQLUsername: 'localhost'
+    # Password to connect to the MySQL database
+    mySQLPassword: '123456'
+    # Database Name
+    mySQLDatabase: 'banksystem_database'
+    # Table of the database
+    mySQLTablename: 'banksystem_userdata'
+
+############################################################
+# +------------------------------------------------------+ #
+# |                   General Settings                   | #
+# +------------------------------------------------------+ #
+############################################################
+
+Settings: 
+    # Maximum amount of money on player's account
+    bankLimit: 10000000
+    # Maximum amount of money in player's pocket
+    pocketLimit: 10000000
+    # Amount of time in milliseconds a player has to wait between interactions.
+    # 1000 milliseconds = 1 second
+    interactCooldown: 3000
+    # Interest settings
+    # Enable bank accounts interest
+    # Valid values: true, false
+    interestEnabled: false
+    # Interest amount in percentage
+    # Example values: 0.05% | 0.5% | 5%
+    interestPercentage: 0.05%
+    # Cooldown between interest credit in minutes.
+    # Default value: 60 minutes
+    interestCooldown: 60
+
+############################################################
+# +------------------------------------------------------+ #
+# |                    Sign Settings                     | #
+# +------------------------------------------------------+ #
+############################################################ 
+
+Sign:
+    # Color formats are not supported in balance, deposit, withdraw.
+    balance: Balance
+    deposit: Deposit
+    withdraw: Withdraw
+    # 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+    # a, b, c, d, e, f
+    # For more details visit: https://www.planetminecraft.com/blog/minecraft-color-codes-2906205/
+    color: 4
+    
+############################################################
+# +------------------------------------------------------+ #
+# |                  Message Settings                    | #
+# +------------------------------------------------------+ #
+############################################################ 
+
+Messages:
+    # %player%  : The player.
+    # %balance% : Bank balance.
+    # %pocket%  : Pocket balance.
+    # %total%   : Total balance.
+    # %amount%  : Amount of set/interest/deposit/success.
+    # %interestCooldown% : Shows the cooldown until next interest.
+    prefix: '&e&lBankSystem &8>> '
+    console: '&cYou can''t run this command from console!'
+    playerOffline: '&cPlayer currently offline!'
+    signCreateSuccess: '&aCreated sign succesfully!'
+    signRemoveSuccess: '&aSign removed succesfully!'
+    signError: '&cCould not create bank sign!'
+    noPermission: '&cYou''re not allowed to do this.'
+    noBank: '&a%player% &cdoes not have an account!'
+    sneakBreak: '&cSneak to break the Bank sign!'
+    notEnoughMoney: '&cSorry you don''t have that much.'
+    notSurvival: '&cYou can only use this sign in survival.'
+    depositSuccess: '&7You have deposited &a$%amount% &7into your bank!'
+    withdrawSuccess: '&7You withdrew &a$%amount% &7into your bank!'
+    reachedBankLimit: '&cReached bank account limit!'
+    reachedPocketLimit: '&cReached pocket money limit!'
+    tooFastInteract: '&cYou can''t interact this often.'
+    setCommand: '&7%player% bank balance set to: &a$%amount%'
+    interest: '&7Interest credited: &a$%amount%'
+    interestCommand: '&7Next interest in: &a%interestCooldown%'
+    interestDisabled: '&cInterest is disabled!'
+    invalidAmount: '&cYou have entered an invalid amount. Possible denominations include only Numerical Characters and/or a Decimal Point (e.g. 1, 1.0, 1.00).'
+    reloadError: '&cError reloading config!'
+    reloadSuccess: '&aConfig reloaded succesfully!'
+    balance:
+        - '&6.oOo.___________.[ &eBank System Balance &6].___________.oOo.'
+        - '&7Bank: &a$%balance%'
+        - '&7Balance: &a$%pocket%'
+        - '&7Total Balance: &a$%total%'
+    help:
+        - '&6.oOo.___________.[ &eBank System Help &6].___________.oOo.'
+        - '&e/bank balance&7: Check your bank balance.'
+        - '&e/bank deposit [amount]&7: Deposit money to your bank.'
+        - '&e/bank withdraw [amount]&7: Withdraw money from your bank.'
+    admin:
+        - '&6.oOo.___________.[ &eBank System Admin &6].___________.oOo.'
+        - '&e/bank balance [playerName]&7: Check online players bank balance.'
+        - '&e/bank set [playerName] [amount]&7: Set online players bank balance.'
+        - '&e/bank reload&7: Reload BankSystem config file.'

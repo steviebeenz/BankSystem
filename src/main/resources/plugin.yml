@@ -1,0 +1,29 @@
+name: BankSystem
+main: net.twiistrz.banksystem.BankSystem
+version: 1.8.7-SNAPSHOT
+load: STARTUP
+depend: [Vault]
+author: Mannyseete (Twiistrz)
+description: Banking System - Sign Bank - Customization
+commands:
+    bank:
+        description: See the list of all available commands.
+permissions:
+    banksystem.sign.use:
+        description: Allows to use the Bank sign.
+        default: true
+    banksystem.command.balance:
+        description: Check your bank balance.
+        default: true
+    banksystem.command.deposit:
+        description: Deposit money to your bank.
+        default: true
+    banksystem.command.withdraw:
+        description: Withdraw money from your bank.
+        default: true
+    banksystem.command.interest:
+        description: Checks the cooldown until next interest.
+        default: true
+    banksystem.admin:
+        description: Allows creating and removing BankSystem signs.
+        default: op
