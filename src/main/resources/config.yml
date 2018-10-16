@@ -1,6 +1,6 @@
 # Default config file for BankSystem
 # Author: Twiistrz
-# Version: 1.8.7-SNAPSHOT
+# Version: 1.8.9
 
 # If you want to use special characters in this document, such as accented letters, you MUST save the file as UTF-8, not ANSI.
 # If you receive an error when BankSystem loads, ensure that:

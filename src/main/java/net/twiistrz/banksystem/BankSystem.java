@@ -16,7 +16,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public final class BankSystem extends JavaPlugin {
+public class BankSystem extends JavaPlugin {
 
     public static Logger logger;
     public static Economy econ = null;
@@ -77,6 +77,7 @@ public final class BankSystem extends JavaPlugin {
             databaseManager = new DatabaseManagerFlatFile(this);
             moneyDatabaseInterface = new BankSystemFlatFileInterface(this);
         }
+        setupPlaceholderAPI();
         reloadCommand = new ReloadCommand(this);
         balanceCommand = new BalanceCommand(this);
         setCommand = new SetCommand(this);
@@ -127,6 +128,16 @@ public final class BankSystem extends JavaPlugin {
             getServer().getPluginManager().disablePlugin(this);
         }
         return false;
+    }
+
+    private boolean setupPlaceholderAPI() {
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") == null) {
+            logger.log(Level.WARNING, "PlaceholderAPI not found, disabling placeholders!");
+            return true;
+        }         
+        new PlaceholderHandler(this).register();
+        logger.log(Level.INFO, "PlaceholderAPI Found!");
+        return true;
     }
 
     private boolean setupEconomy() {

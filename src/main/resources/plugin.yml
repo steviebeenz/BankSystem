@@ -1,8 +1,9 @@
 name: BankSystem
 main: net.twiistrz.banksystem.BankSystem
-version: 1.8.7-SNAPSHOT
+version: 1.8.9
 load: STARTUP
 depend: [Vault]
+softdepend: [PlaceholderAPI]
 author: Mannyseete (Twiistrz)
 description: Banking System - Sign Bank - Customization
 commands:

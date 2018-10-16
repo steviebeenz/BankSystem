@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.twiistrz</groupId>
     <artifactId>BankSystem</artifactId>
-    <version>1.8.7-SNAPSHOT</version>
+    <version>1.8.9</version>
     <name>BankSystem</name>
     <packaging>jar</packaging>
     <url>https://github.com/Twiistrz/BankSystem/</url>
@@ -50,6 +50,10 @@
             <id>puha-repo</id>
             <url>https://repo.puha.io/repo/</url>
         </repository>
+        <repository>
+            <id>placeholderapi</id>
+            <url>http://repo.extendedclip.com/content/repositories/placeholderapi/</url>
+        </repository>
     </repositories>
         
     <dependencies>
@@ -72,6 +76,13 @@
             <groupId>net.milkbowl.vault</groupId>
             <artifactId>VaultAPI</artifactId>
             <version>1.6</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- PLACEHOLDER API -->
+        <dependency>
+            <groupId>me.clip</groupId>
+            <artifactId>placeholderapi</artifactId>
+            <version>2.9.2</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
