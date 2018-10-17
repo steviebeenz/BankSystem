@@ -1,6 +1,6 @@
 # Default config file for BankSystem
 # Author: Twiistrz
-# Version: 1.9.2
+# Version: 1.9.3
 
 # If you want to use special characters in this document, such as accented letters, you MUST save the file as UTF-8, not ANSI.
 # If you receive an error when BankSystem loads, ensure that:
@@ -41,7 +41,11 @@ DataSource:
 ############################################################
 
 Settings: 
+    # Enable/disable update checker when admin join the server
     updateChecker: true
+    # Enable/disable override default balance command in-game
+    # /bal and /balance
+    overrideBalanceCommand: true
     # Maximum amount of money on player's account
     bankLimit: 10000000
     # Maximum amount of money in player's pocket
@@ -80,7 +84,7 @@ Sign:
 # +------------------------------------------------------+ #
 # |                  Message Settings                    | #
 # +------------------------------------------------------+ #
-############################################################ 
+############################################################
 
 Messages:
     # %player%  : The player.

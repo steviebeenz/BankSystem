@@ -1,15 +1,15 @@
 package net.twiistrz.banksystem;
 
-import org.bukkit.ChatColor;
-import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
+import org.bukkit.ChatColor;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 public final class ConfigHandler {
 	

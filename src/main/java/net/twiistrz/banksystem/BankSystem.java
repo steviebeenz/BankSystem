@@ -1,10 +1,6 @@
 package net.twiistrz.banksystem;
 
 import java.io.BufferedReader;
-import net.twiistrz.banksystem.commands.*;
-import net.twiistrz.banksystem.database.*;
-import net.milkbowl.vault.economy.Economy;
-import net.milkbowl.vault.permission.Permission;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -15,6 +11,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.twiistrz.banksystem.commands.*;
+import net.twiistrz.banksystem.database.*;
+import net.milkbowl.vault.economy.Economy;
+import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginManager;
@@ -42,7 +42,7 @@ public class BankSystem extends JavaPlugin {
     private static WithdrawCommand withdrawCommand;
     private static InterestHandler interestHandler;
     private static InterestCommand interestCommand;
-    String version = "";
+    public String version = "";
 
     @Override
     public void onEnable() {
@@ -118,7 +118,7 @@ public class BankSystem extends JavaPlugin {
     private void updateChecker() {
         logger.log(Level.INFO, "Checking for updates...");
         try {
-            HttpURLConnection connection = (HttpURLConnection)new URL("https://api.spigotmc.org/legacy/update.php?resource=61580").openConnection();
+            HttpURLConnection connection = (HttpURLConnection) new URL("https://api.spigotmc.org/legacy/update.php?resource=61580").openConnection();
             connection.setDoOutput(true);
             connection.setRequestMethod("POST");
             String versionConsole = new BufferedReader(new InputStreamReader(connection.getInputStream())).readLine();
@@ -128,26 +128,10 @@ public class BankSystem extends JavaPlugin {
                 logger.log(Level.INFO, "An update for {0} ({1}) is available! You are still running BankSystem {2}.", new Object[]{getDescription().getName(), versionConsole, getDescription().getVersion()});
                 logger.log(Level.INFO, "Update at https://www.spigotmc.org/resources/1-8-1-12-banksystem.61580/");
             }
-        } catch(IOException e) {
+        } catch (IOException e) {
             logger.log(Level.SEVERE, "Could not check update, API seems unreachable.");
             logger.log(Level.SEVERE, "{0}", e.getMessage());
         }
-    }
-    
-    boolean updateCheckerOnJoin() {
-        if (getConfigurationHandler().getString("Settings.updateChecker").equalsIgnoreCase("true")) {
-            try {
-                HttpURLConnection connection = (HttpURLConnection)new URL("https://api.spigotmc.org/legacy/update.php?resource=61580").openConnection();
-                connection.setDoOutput(true);
-                connection.setRequestMethod("POST");
-                version = new BufferedReader(new InputStreamReader(connection.getInputStream())).readLine();
-                return version.equalsIgnoreCase(getDescription().getVersion());
-            } catch(IOException e) {
-                logger.log(Level.SEVERE, "Could not check update, API seems unreachable.");
-                logger.log(Level.SEVERE, "{0}", e.getMessage());
-            }
-        }
-        return false;
     }
 
     private boolean getServerVersion() {
@@ -166,7 +150,8 @@ public class BankSystem extends JavaPlugin {
                 || serverVersion[0].matches("1.8")) {
             is18Server = true;
             return true;
-        } else if (serverVersion[0].matches("1.13") || serverVersion[0].matches("1.13.1")) {
+        } else if (serverVersion[0].matches("1.13")
+                || serverVersion[0].matches("1.13.1")) {
             logger.log(Level.WARNING, "If you found a bug while using this plugin in 1.13.x kindly report it! Thank you.");
             is113Server = true;
         }
@@ -177,7 +162,7 @@ public class BankSystem extends JavaPlugin {
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") == null) {
             logger.log(Level.WARNING, "PlaceholderAPI not found, disabling placeholders!");
             return true;
-        }         
+        }
         new PlaceholderHandler(this).register();
         logger.log(Level.INFO, "PlaceholderAPI Found!");
         return true;
@@ -201,6 +186,22 @@ public class BankSystem extends JavaPlugin {
         perms = rsp.getProvider();
         logger.log(Level.INFO, "Permission provider: {0}", rsp.getProvider().getName());
         return perms != null;
+    }
+
+    public boolean updateCheckerOnJoin() {
+        if (getConfigurationHandler().getBoolean("Settings.updateChecker")) {
+            try {
+                HttpURLConnection connection = (HttpURLConnection) new URL("https://api.spigotmc.org/legacy/update.php?resource=61580").openConnection();
+                connection.setDoOutput(true);
+                connection.setRequestMethod("POST");
+                version = new BufferedReader(new InputStreamReader(connection.getInputStream())).readLine();
+                return version.equalsIgnoreCase(getDescription().getVersion());
+            } catch (IOException e) {
+                logger.log(Level.SEVERE, "Could not check update, API seems unreachable.");
+                logger.log(Level.SEVERE, "{0}", e.getMessage());
+            }
+        }
+        return false;
     }
 
     public UserdataDatabaseInterface<Double> getMoneyDatabaseInterface() {

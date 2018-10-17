@@ -1,6 +1,11 @@
 package net.twiistrz.banksystem;
 
 import net.milkbowl.vault.economy.Economy;
+import java.text.DecimalFormat;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -12,13 +17,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import java.text.DecimalFormat;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 import org.bukkit.GameMode;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 public class PlayerListener implements Listener {
@@ -67,6 +68,17 @@ public class PlayerListener implements Listener {
         }
     }
 
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onCommand(PlayerCommandPreprocessEvent event) {
+        if (plugin.getConfigurationHandler().getBoolean("Settings.overrideBalanceCommand")) {
+            if (event.getMessage().toLowerCase().startsWith("/bal")
+                    || event.getMessage().toLowerCase().startsWith("/balance")) {
+                event.setCancelled(true);
+                event.getPlayer().performCommand("bank balance");
+            }
+        }
+    }
+
     /**
      *
      * @param event Interaction event
@@ -75,12 +87,12 @@ public class PlayerListener implements Listener {
     public void onClick(final PlayerInteractEvent event) {
         final Player p = event.getPlayer();
         if (event.getClickedBlock() != null) {
-            if (event.getClickedBlock().getType().equals(Material.WALL_SIGN)
+            if (event.getClickedBlock().getType().equals(Material.valueOf("WALL_SIGN"))
                     || (!plugin.is113Server && event.getClickedBlock().getType().equals(Material.valueOf("SIGN_POST")))
-                    || (plugin.is113Server && event.getClickedBlock().getType().equals(Material.SIGN))
-                    || (plugin.is113Server && event.getClickedBlock().getType().equals(Material.LEGACY_SIGN))
-                    || (plugin.is113Server && event.getClickedBlock().getType().equals(Material.LEGACY_SIGN_POST))
-                    || (plugin.is113Server && event.getClickedBlock().getType().equals(Material.LEGACY_WALL_SIGN))) {
+                    || (plugin.is113Server && event.getClickedBlock().getType().equals(Material.valueOf("SIGN")))
+                    || (plugin.is113Server && event.getClickedBlock().getType().equals(Material.valueOf("LEGACY_SIGN")))
+                    || (plugin.is113Server && event.getClickedBlock().getType().equals(Material.valueOf("LEGACY_SIGN_POST")))
+                    || (plugin.is113Server && event.getClickedBlock().getType().equals(Material.valueOf("LEGACY_WALL_SIGN")))) {
                 if (isEventSafe(event.getPlayer().getUniqueId())) {
                     final Sign sign = (Sign) event.getClickedBlock().getState();
                     Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
@@ -226,7 +238,8 @@ public class PlayerListener implements Listener {
             if (BankSystem.perms.has(p, "banksystem.admin")) {
                 // Balance signs
                 if (event.getLine(1).toLowerCase().contains("balance")) {
-                    if (!event.getLine(2).isEmpty() || !event.getLine(3).isEmpty()) {
+                    if (!event.getLine(2).isEmpty()
+                            || !event.getLine(3).isEmpty()) {
                         plugin.getConfigurationHandler().printMessage(p, "Messages.signError", "0", p, p.getName(), true);
                         plugin.getSoundHandler().sendPlingSound(p);
                         p.sendMessage(plugin.getConfigurationHandler().parseFormattingCodes(prefix + "&cLine 3 and 4 must be empty for balance sign!"));
@@ -323,18 +336,19 @@ public class PlayerListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onSignRemove(BlockBreakEvent event) {
         Player p = event.getPlayer();
-        if (event.getBlock().getType().equals(Material.WALL_SIGN)
+        if (event.getBlock().getType().equals(Material.valueOf("WALL_SIGN"))
                 || (!plugin.is113Server && event.getBlock().getType().equals(Material.valueOf("SIGN_POST")))
-                || (plugin.is113Server && event.getBlock().getType().equals(Material.SIGN))
-                || (plugin.is113Server && event.getBlock().getType().equals(Material.LEGACY_SIGN))
-                || (plugin.is113Server && event.getBlock().getType().equals(Material.LEGACY_SIGN_POST))
-                || (plugin.is113Server && event.getBlock().getType().equals(Material.LEGACY_WALL_SIGN))) {
+                || (plugin.is113Server && event.getBlock().getType().equals(Material.valueOf("SIGN")))
+                || (plugin.is113Server && event.getBlock().getType().equals(Material.valueOf("LEGACY_SIGN")))
+                || (plugin.is113Server && event.getBlock().getType().equals(Material.valueOf("LEGACY_SIGN_POST")))
+                || (plugin.is113Server && event.getBlock().getType().equals(Material.valueOf("LEGACY_WALL_SIGN")))) {
             //check the found sign for the players name.
             Sign sign = (Sign) event.getBlock().getState();
             if (sign.getLine(0).contains(plugin.getConfigurationHandler().getString("Sign.color") + ChatColor.BOLD + "[Bank]")) {
                 if (BankSystem.perms.has(p, "banksystem.admin")) {
                     //Check if sneaking
-                    if (p.isSneaking() || p.getGameMode().equals(GameMode.CREATIVE)) {
+                    if (p.isSneaking()
+                            || p.getGameMode().equals(GameMode.CREATIVE)) {
                         plugin.getConfigurationHandler().printMessage(p, "Messages.signRemoveSuccess", "0", p, p.getName(), true);
                         plugin.getSoundHandler().sendItemBreakSound(p);
                         return;
