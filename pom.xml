@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.twiistrz</groupId>
     <artifactId>BankSystem</artifactId>
-    <version>1.8.9</version>
+    <version>1.9.2</version>
     <name>BankSystem</name>
     <packaging>jar</packaging>
     <url>https://github.com/Twiistrz/BankSystem/</url>
@@ -61,14 +61,14 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.12-R0.1-SNAPSHOT</version>
+            <version>1.13-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <!-- BUKKIT API -->        
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
-            <version>1.12-R0.1-SNAPSHOT</version>
+            <version>1.13-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <!-- VAULT API -->

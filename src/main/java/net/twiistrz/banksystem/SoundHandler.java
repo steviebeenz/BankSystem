@@ -37,6 +37,8 @@ public class SoundHandler {
     public void sendPlingSound(Player p) {
         if (plugin.is18Server) {
             p.playSound(p.getLocation(), Sound.valueOf("NOTE_PLING"), 3.0F, 3.0F);
+        } else if (plugin.is113Server) {
+            p.playSound(p.getLocation(), Sound.valueOf("BLOCK_NOTE_BLOCK_PLING"), 1.0F, 1.0F);
         } else {
             p.playSound(p.getLocation(), Sound.valueOf("BLOCK_NOTE_PLING"), 3.0F, 3.0F);
         }

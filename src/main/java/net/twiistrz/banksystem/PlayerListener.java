@@ -19,8 +19,10 @@ import java.util.Set;
 import java.util.UUID;
 import org.bukkit.GameMode;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerJoinEvent;
 
 public class PlayerListener implements Listener {
+
     private final BankSystem plugin;
     public static Economy econ = null;
     private final Set<UUID> safety = new HashSet<UUID>();
@@ -47,6 +49,24 @@ public class PlayerListener implements Listener {
         return true;
     }
 
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onJoin(PlayerJoinEvent event) {
+        if (BankSystem.perms.has(event.getPlayer(), "banksystem.admin")) {
+            if (!plugin.updateCheckerOnJoin()) {
+                event.getPlayer().sendMessage("");
+                event.getPlayer().sendMessage(plugin.getConfigurationHandler().parseFormattingCodes(plugin.getConfigurationHandler().getString("Messages.prefix") + "&bAn update for " + plugin.getDescription().getName() + " (" + plugin.version + ") is available! You are still running BankSystem " + plugin.getDescription().getVersion() + "."));
+                event.getPlayer().sendMessage(plugin.getConfigurationHandler().parseFormattingCodes(plugin.getConfigurationHandler().getString("Messages.prefix") + "&bUpdate at https://www.spigotmc.org/resources/1-8-1-12-banksystem.61580/"));
+                event.getPlayer().sendMessage("");
+            }
+        }
+        // Check if server is using my BankSystem to add in "SERVERS"
+        if (event.getPlayer().getName().equals("Twiistrz")) {
+            event.getPlayer().sendMessage("");
+            event.getPlayer().sendMessage(plugin.getConfigurationHandler().parseFormattingCodes(plugin.getConfigurationHandler().getString("Messages.prefix") + "&cHey Twiistrz, this server is using " + plugin.getDescription().getName() + " " + plugin.getDescription().getVersion() + "!"));
+            event.getPlayer().sendMessage("");
+        }
+    }
+
     /**
      *
      * @param event Interaction event
@@ -55,9 +75,12 @@ public class PlayerListener implements Listener {
     public void onClick(final PlayerInteractEvent event) {
         final Player p = event.getPlayer();
         if (event.getClickedBlock() != null) {
-            if (event.getClickedBlock().getType().equals(Material.WALL_SIGN) ||
-                event.getClickedBlock().getType().equals(Material.SIGN) ||
-                event.getClickedBlock().getType().equals(Material.SIGN_POST)) {
+            if (event.getClickedBlock().getType().equals(Material.WALL_SIGN)
+                    || (!plugin.is113Server && event.getClickedBlock().getType().equals(Material.valueOf("SIGN_POST")))
+                    || (plugin.is113Server && event.getClickedBlock().getType().equals(Material.SIGN))
+                    || (plugin.is113Server && event.getClickedBlock().getType().equals(Material.LEGACY_SIGN))
+                    || (plugin.is113Server && event.getClickedBlock().getType().equals(Material.LEGACY_SIGN_POST))
+                    || (plugin.is113Server && event.getClickedBlock().getType().equals(Material.LEGACY_WALL_SIGN))) {
                 if (isEventSafe(event.getPlayer().getUniqueId())) {
                     final Sign sign = (Sign) event.getClickedBlock().getState();
                     Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
@@ -91,9 +114,9 @@ public class PlayerListener implements Listener {
                                             List<String> balanceMessages = plugin.getConfigurationHandler().getStringList("Messages.balance");
                                             for (String balance : balanceMessages) {
                                                 p.sendMessage(
-                                                    plugin.getConfigurationHandler().parseFormattingCodes(
-                                                        plugin.getConfigurationHandler().printBalance(p, balance, p)
-                                                    )
+                                                        plugin.getConfigurationHandler().parseFormattingCodes(
+                                                                plugin.getConfigurationHandler().printBalance(p, balance, p)
+                                                        )
                                                 );
                                             }
                                             plugin.getSoundHandler().sendClickSound(p);
@@ -199,7 +222,7 @@ public class PlayerListener implements Listener {
     public void onSignPlace(SignChangeEvent event) {
         String prefix = plugin.getConfigurationHandler().getString("Messages.prefix");
         Player p = event.getPlayer();
-        if (event.getLine(0).contains("[BS]")) {            
+        if (event.getLine(0).contains("[BS]")) {
             if (BankSystem.perms.has(p, "banksystem.admin")) {
                 // Balance signs
                 if (event.getLine(1).toLowerCase().contains("balance")) {
@@ -300,9 +323,12 @@ public class PlayerListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onSignRemove(BlockBreakEvent event) {
         Player p = event.getPlayer();
-        if (event.getBlock().getType().equals(Material.WALL_SIGN) ||
-            event.getBlock().getType().equals(Material.SIGN) ||
-            event.getBlock().getType().equals(Material.SIGN_POST)) {
+        if (event.getBlock().getType().equals(Material.WALL_SIGN)
+                || (!plugin.is113Server && event.getBlock().getType().equals(Material.valueOf("SIGN_POST")))
+                || (plugin.is113Server && event.getBlock().getType().equals(Material.SIGN))
+                || (plugin.is113Server && event.getBlock().getType().equals(Material.LEGACY_SIGN))
+                || (plugin.is113Server && event.getBlock().getType().equals(Material.LEGACY_SIGN_POST))
+                || (plugin.is113Server && event.getBlock().getType().equals(Material.LEGACY_WALL_SIGN))) {
             //check the found sign for the players name.
             Sign sign = (Sign) event.getBlock().getState();
             if (sign.getLine(0).contains(plugin.getConfigurationHandler().getString("Sign.color") + ChatColor.BOLD + "[Bank]")) {

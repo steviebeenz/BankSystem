@@ -1,20 +1,25 @@
 package net.twiistrz.banksystem;
 
+import java.io.BufferedReader;
 import net.twiistrz.banksystem.commands.*;
 import net.twiistrz.banksystem.database.*;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
-import org.bukkit.Bukkit;
-import org.bukkit.event.HandlerList;
-import org.bukkit.plugin.PluginManager;
-import org.bukkit.plugin.RegisteredServiceProvider;
-import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.bukkit.Bukkit;
+import org.bukkit.event.HandlerList;
+import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.RegisteredServiceProvider;
+import org.bukkit.plugin.java.JavaPlugin;
 
 public class BankSystem extends JavaPlugin {
 
@@ -22,6 +27,7 @@ public class BankSystem extends JavaPlugin {
     public static Economy econ = null;
     public static Permission perms = null;
     public boolean is18Server = false;
+    public boolean is113Server = false;
     public Set<UUID> cooldown = new HashSet<UUID>();
 
     private static ConfigHandler configHandler;
@@ -36,6 +42,7 @@ public class BankSystem extends JavaPlugin {
     private static WithdrawCommand withdrawCommand;
     private static InterestHandler interestHandler;
     private static InterestCommand interestCommand;
+    String version = "";
 
     @Override
     public void onEnable() {
@@ -92,6 +99,7 @@ public class BankSystem extends JavaPlugin {
         getCommand("bank").setExecutor(commandHandler);
         pluginEnabled = true;
         logger.log(Level.INFO, "Enabled {0} {1}!", new Object[]{getDescription().getName(), getDescription().getVersion()});
+        updateChecker();
     }
 
     @Override
@@ -105,6 +113,41 @@ public class BankSystem extends JavaPlugin {
             }
         }
         logger.log(Level.INFO, "Disabled {0} {1}!", new Object[]{getDescription().getName(), getDescription().getVersion()});
+    }
+
+    private void updateChecker() {
+        logger.log(Level.INFO, "Checking for updates...");
+        try {
+            HttpURLConnection connection = (HttpURLConnection)new URL("https://api.spigotmc.org/legacy/update.php?resource=61580").openConnection();
+            connection.setDoOutput(true);
+            connection.setRequestMethod("POST");
+            String versionConsole = new BufferedReader(new InputStreamReader(connection.getInputStream())).readLine();
+            if (versionConsole.equalsIgnoreCase(getDescription().getVersion())) {
+                logger.log(Level.INFO, "No updates available. {0} is up to date!", getDescription().getName());
+            } else {
+                logger.log(Level.INFO, "An update for {0} ({1}) is available! You are still running BankSystem {2}.", new Object[]{getDescription().getName(), versionConsole, getDescription().getVersion()});
+                logger.log(Level.INFO, "Update at https://www.spigotmc.org/resources/1-8-1-12-banksystem.61580/");
+            }
+        } catch(IOException e) {
+            logger.log(Level.SEVERE, "Could not check update, API seems unreachable.");
+            logger.log(Level.SEVERE, "{0}", e.getMessage());
+        }
+    }
+    
+    boolean updateCheckerOnJoin() {
+        if (getConfigurationHandler().getString("Settings.updateChecker").equalsIgnoreCase("true")) {
+            try {
+                HttpURLConnection connection = (HttpURLConnection)new URL("https://api.spigotmc.org/legacy/update.php?resource=61580").openConnection();
+                connection.setDoOutput(true);
+                connection.setRequestMethod("POST");
+                version = new BufferedReader(new InputStreamReader(connection.getInputStream())).readLine();
+                return version.equalsIgnoreCase(getDescription().getVersion());
+            } catch(IOException e) {
+                logger.log(Level.SEVERE, "Could not check update, API seems unreachable.");
+                logger.log(Level.SEVERE, "{0}", e.getMessage());
+            }
+        }
+        return false;
     }
 
     private boolean getServerVersion() {
@@ -124,8 +167,8 @@ public class BankSystem extends JavaPlugin {
             is18Server = true;
             return true;
         } else if (serverVersion[0].matches("1.13") || serverVersion[0].matches("1.13.1")) {
-            logger.log(Level.SEVERE, "Does not supports 1.13");
-            getServer().getPluginManager().disablePlugin(this);
+            logger.log(Level.WARNING, "If you found a bug while using this plugin in 1.13.x kindly report it! Thank you.");
+            is113Server = true;
         }
         return false;
     }
