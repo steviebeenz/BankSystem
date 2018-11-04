@@ -151,7 +151,8 @@ public class BankSystem extends JavaPlugin {
             is18Server = true;
             return true;
         } else if (serverVersion[0].matches("1.13")
-                || serverVersion[0].matches("1.13.1")) {
+                || serverVersion[0].matches("1.13.1")
+                || serverVersion[0].matches("1.13.2")) {
             logger.log(Level.WARNING, "If you found a bug while using this plugin in 1.13.x kindly report it! Thank you.");
             is113Server = true;
         }
