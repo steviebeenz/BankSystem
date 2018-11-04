@@ -120,7 +120,7 @@ public final class ConfigHandler {
             bankBalance = plugin.getMoneyDatabaseInterface().getBalance(p2);
             totalBalance = BankSystem.econ.getBalance(p2) + bankBalance;
         }
-        return message.replaceAll("%balance%", money.format(bankBalance)).replaceAll("%pocket%", money.format(BankSystem.econ.getBalance(p2))).replaceAll("%total%", money.format(totalBalance));
+        return message.replaceAll("%balance%", this.plugin.getConfigurationHandler().getString("Settings.currency") + money.format(bankBalance)).replaceAll("%pocket%", this.plugin.getConfigurationHandler().getString("Settings.currency") + money.format(BankSystem.econ.getBalance(p2))).replaceAll("%total%", this.plugin.getConfigurationHandler().getString("Settings.currency") + money.format(totalBalance));
     }
     
     public String printBalance(CommandSender p1, String message, Player p2) {
@@ -131,7 +131,7 @@ public final class ConfigHandler {
             bankBalance = plugin.getMoneyDatabaseInterface().getBalance(p2);
             totalBalance = BankSystem.econ.getBalance(p2) + bankBalance;
         }
-        return message.replaceAll("%balance%", money.format(bankBalance)).replaceAll("%pocket%", money.format(BankSystem.econ.getBalance(p2))).replaceAll("%total%", money.format(totalBalance));
+        return message.replaceAll("%balance%", this.plugin.getConfigurationHandler().getString("Settings.currency") + money.format(bankBalance)).replaceAll("%pocket%", this.plugin.getConfigurationHandler().getString("Settings.currency") + money.format(BankSystem.econ.getBalance(p2))).replaceAll("%total%", this.plugin.getConfigurationHandler().getString("Settings.currency") + money.format(totalBalance));
     }
 
     /**
@@ -158,7 +158,7 @@ public final class ConfigHandler {
                 message.set(0, message.get(0).replaceAll("%interestCooldown%", plugin.getInterestHandler().getNextInterestTime()));
             }
             if (amount != null && !amount.isEmpty()) {
-                message.set(0, message.get(0).replaceAll("%amount%", money.format(Double.parseDouble(amount))));
+                message.set(0, message.get(0).replaceAll("%amount%", this.plugin.getConfigurationHandler().getString("Settings.currency") + money.format(Double.parseDouble(amount))));
             }
             if (prefix) {
                 p1.sendMessage(parseFormattingCodes(getString("Messages.prefix") + message.get(0)));
@@ -189,7 +189,7 @@ public final class ConfigHandler {
                 message.set(0, message.get(0).replaceAll("%interestCooldown%", plugin.getInterestHandler().getNextInterestTime()));
             }
             if (amount != null && !amount.isEmpty()) {
-                message.set(0, message.get(0).replaceAll("%amount%", money.format(Double.parseDouble(amount))));
+                message.set(0, message.get(0).replaceAll("%amount%", this.plugin.getConfigurationHandler().getString("Settings.currency") + money.format(Double.parseDouble(amount))));
             }
             if (prefix) {
                 sender.sendMessage(parseFormattingCodes(getString("Messages.prefix") + message.get(0)));
