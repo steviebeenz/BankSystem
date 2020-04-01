@@ -1,12 +1,17 @@
 name: BankSystem
+version: 3.0.1
+description: BankSystem allows you to safely store your money in other to avoid overspending. For example this can be used for your market shops so you don't end up losing all your money if your shop have some very favorable trades.
+
+author: Twiistrz
+website: https://www.spigotmc.org/resources/1-8-1-13-banksystem.61580/
+api-version: 1.13
+
 main: net.twiistrz.banksystem.BankSystem
-version: 1.9.3
 load: STARTUP
+
 depend: [Vault]
 softdepend: [PlaceholderAPI]
-author: Mannyseete (Twiistrz)
-description: Banking System - Sign Bank - Customization
-api-version: 1.13
+
 commands:
     bank:
         description: See the list of all available commands.

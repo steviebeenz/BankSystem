@@ -1,251 +1,296 @@
 package net.twiistrz.banksystem;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import net.twiistrz.banksystem.commands.*;
-import net.twiistrz.banksystem.database.*;
+
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
+import net.twiistrz.banksystem.commands.BalanceCommand;
+import net.twiistrz.banksystem.commands.DepositCommand;
+import net.twiistrz.banksystem.commands.InterestCommand;
+import net.twiistrz.banksystem.commands.ReloadCommand;
+import net.twiistrz.banksystem.commands.SetCommand;
+import net.twiistrz.banksystem.commands.WithdrawCommand;
+import net.twiistrz.banksystem.database.BankSystemFlatFileInterface;
+import net.twiistrz.banksystem.database.BankSystemMysqlInterface;
+import net.twiistrz.banksystem.database.DatabaseManagerFlatFile;
+import net.twiistrz.banksystem.database.DatabaseManagerInterface;
+import net.twiistrz.banksystem.database.DatabaseManagerMysql;
+import net.twiistrz.banksystem.database.UserdataDatabaseInterface;
+
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class BankSystem extends JavaPlugin {
+	public static Logger logger;
 
-    public static Logger logger;
-    public static Economy econ = null;
-    public static Permission perms = null;
-    public boolean is18Server = false;
-    public boolean is113Server = false;
-    public Set<UUID> cooldown = new HashSet<UUID>();
+	public static Economy econ = null;
 
-    private static ConfigHandler configHandler;
-    private DatabaseManagerInterface databaseManager;
-    private UserdataDatabaseInterface<Double> moneyDatabaseInterface;
-    private boolean pluginEnabled = false;
-    private static SoundHandler soundHandler;
-    private static ReloadCommand reloadCommand;
-    private static BalanceCommand balanceCommand;
-    private static SetCommand setCommand;
-    private static DepositCommand depositCommand;
-    private static WithdrawCommand withdrawCommand;
-    private static InterestHandler interestHandler;
-    private static InterestCommand interestCommand;
-    public String version = "";
+	public static Permission perms = null;
 
-    @Override
-    public void onEnable() {
-        logger = getLogger();
-        getServerVersion();
-        // Setup Vault for economy and permissions
-        if (!setupEconomy()) {
-            logger.log(Level.SEVERE, "WARNING! Vault or Economy System not found, disabling plugin.");
-            getServer().getPluginManager().disablePlugin(this);
-            return;
-        }
-        setupPermissions();
-        // Load Configuration
-        configHandler = new ConfigHandler(this);
-        soundHandler = new SoundHandler(this);
-        // Setup Database
-        if (configHandler.getString("DataSource.backend").equalsIgnoreCase("mysql")) {
-            // MySQL Datasource
-            logger.log(Level.INFO, "Using MySQL as DataSource!");
-            databaseManager = new DatabaseManagerMysql(this);
-            moneyDatabaseInterface = new BankSystemMysqlInterface(this);
-        } else if (configHandler.getString("DataSource.backend").equalsIgnoreCase("flatfile")) {
-            // FlatFile
-            logger.log(Level.INFO, "Using FlatFile as DataSource!");
-            if (!new File("plugins" + System.getProperty("file.separator") + getDescription().getName() + System.getProperty("file.separator") + "userdata").exists()) {
-                (new File("plugins" + System.getProperty("file.separator") + getDescription().getName() + System.getProperty("file.separator") + "userdata")).mkdir();
-            }
-            logger.log(Level.INFO, "Loaded successfully!");
-            databaseManager = new DatabaseManagerFlatFile(this);
-            moneyDatabaseInterface = new BankSystemFlatFileInterface(this);
-        } else {
-            // FlatFile
-            logger.log(Level.WARNING, "{0} DataSource not found!", configHandler.getString("DataSource.backend"));
-            logger.log(Level.INFO, "Using FlatFile as DataSource instead!");
-            if (!new File("plugins" + System.getProperty("file.separator") + getDescription().getName() + System.getProperty("file.separator") + "userdata").exists()) {
-                (new File("plugins" + System.getProperty("file.separator") + getDescription().getName() + System.getProperty("file.separator") + "userdata")).mkdir();
-            }
-            logger.log(Level.INFO, "Loaded successfully!");
-            databaseManager = new DatabaseManagerFlatFile(this);
-            moneyDatabaseInterface = new BankSystemFlatFileInterface(this);
-        }
-        setupPlaceholderAPI();
-        reloadCommand = new ReloadCommand(this);
-        balanceCommand = new BalanceCommand(this);
-        setCommand = new SetCommand(this);
-        depositCommand = new DepositCommand(this);
-        withdrawCommand = new WithdrawCommand(this);
-        interestHandler = new InterestHandler(this);
-        interestCommand = new InterestCommand(this);
-        // Register Listeners
-        PluginManager pluginManager = getServer().getPluginManager();
-        pluginManager.registerEvents(new PlayerListener(this), this);
-        CommandHandler commandHandler = new CommandHandler(this);
-        getCommand("bank").setExecutor(commandHandler);
-        pluginEnabled = true;
-        logger.log(Level.INFO, "Enabled {0} {1}!", new Object[]{getDescription().getName(), getDescription().getVersion()});
-        updateChecker();
-    }
+	public boolean is18Server = false;
+	
+	public boolean is19Server = false;
+	
+	public boolean is110Server = false;
+	
+	public boolean is111Server = false;
+	
+	public boolean is112Server = false;
 
-    @Override
-    public void onDisable() {
-        if (pluginEnabled == true) {
-            Bukkit.getScheduler().cancelTasks(this);
-            HandlerList.unregisterAll(this);
-            if (databaseManager.getConnection() != null) {
-                logger.log(Level.INFO, "Closing MySQL connection...");
-                databaseManager.closeDatabase();
-            }
-        }
-        logger.log(Level.INFO, "Disabled {0} {1}!", new Object[]{getDescription().getName(), getDescription().getVersion()});
-    }
+	public boolean is113Server = false;
 
-    private void updateChecker() {
-        logger.log(Level.INFO, "Checking for updates...");
-        try {
-            HttpURLConnection connection = (HttpURLConnection) new URL("https://api.spigotmc.org/legacy/update.php?resource=61580").openConnection();
-            connection.setDoOutput(true);
-            connection.setRequestMethod("POST");
-            String versionConsole = new BufferedReader(new InputStreamReader(connection.getInputStream())).readLine();
-            if (versionConsole.equalsIgnoreCase(getDescription().getVersion())) {
-                logger.log(Level.INFO, "No updates available. {0} is up to date!", getDescription().getName());
-            } else {
-                logger.log(Level.INFO, "An update for {0} ({1}) is available! You are still running BankSystem {2}.", new Object[]{getDescription().getName(), versionConsole, getDescription().getVersion()});
-                logger.log(Level.INFO, "Update at https://www.spigotmc.org/resources/1-8-1-12-banksystem.61580/");
-            }
-        } catch (IOException e) {
-            logger.log(Level.SEVERE, "Could not check update, API seems unreachable.");
-            logger.log(Level.SEVERE, "{0}", e.getMessage());
-        }
-    }
+	public boolean is114Server = false;
 
-    private boolean getServerVersion() {
-        String[] serverVersion = Bukkit.getBukkitVersion().split("-");
-        if (serverVersion[0].matches("1.7.10")
-                || serverVersion[0].matches("1.7.9")
-                || serverVersion[0].matches("1.7.8")
-                || serverVersion[0].matches("1.7.5")
-                || serverVersion[0].matches("1.7.2")
-                || serverVersion[0].matches("1.8.8")
-                || serverVersion[0].matches("1.8.7")
-                || serverVersion[0].matches("1.8.6")
-                || serverVersion[0].matches("1.8.5")
-                || serverVersion[0].matches("1.8.4")
-                || serverVersion[0].matches("1.8.3")
-                || serverVersion[0].matches("1.8")) {
-            is18Server = true;
-            return true;
-        } else if (serverVersion[0].matches("1.13")
-                || serverVersion[0].matches("1.13.1")
-                || serverVersion[0].matches("1.13.2")) {
-            logger.log(Level.WARNING, "If you found a bug while using this plugin in 1.13.x kindly report it! Thank you.");
-            is113Server = true;
-        }
-        return false;
-    }
+	public boolean is115Server = false;
 
-    private boolean setupPlaceholderAPI() {
-        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") == null) {
-            logger.log(Level.WARNING, "PlaceholderAPI not found, disabling placeholders!");
-            return true;
-        }
-        new PlaceholderHandler(this).register();
-        logger.log(Level.INFO, "PlaceholderAPI Found!");
-        return true;
-    }
+	public Set<UUID> cooldown = new HashSet<UUID>();
 
-    private boolean setupEconomy() {
-        if (getServer().getPluginManager().getPlugin("Vault") == null) {
-            return false;
-        }
-        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
-        if (rsp == null) {
-            return false;
-        }
-        econ = rsp.getProvider();
-        logger.log(Level.INFO, "Economy provider: {0}", rsp.getProvider().getName());
-        return econ != null;
-    }
+	private static ConfigHandler configHandler;
 
-    private boolean setupPermissions() {
-        RegisteredServiceProvider<Permission> rsp = getServer().getServicesManager().getRegistration(Permission.class);
-        perms = rsp.getProvider();
-        logger.log(Level.INFO, "Permission provider: {0}", rsp.getProvider().getName());
-        return perms != null;
-    }
+	private DatabaseManagerInterface databaseManager;
 
-    public boolean updateCheckerOnJoin() {
-        if (getConfigurationHandler().getBoolean("Settings.updateChecker")) {
-            try {
-                HttpURLConnection connection = (HttpURLConnection) new URL("https://api.spigotmc.org/legacy/update.php?resource=61580").openConnection();
-                connection.setDoOutput(true);
-                connection.setRequestMethod("POST");
-                version = new BufferedReader(new InputStreamReader(connection.getInputStream())).readLine();
-                return version.equalsIgnoreCase(getDescription().getVersion());
-            } catch (IOException e) {
-                logger.log(Level.SEVERE, "Could not check update, API seems unreachable.");
-                logger.log(Level.SEVERE, "{0}", e.getMessage());
-            }
-        }
-        return false;
-    }
+	private UserdataDatabaseInterface<Double> moneyDatabaseInterface;
 
-    public UserdataDatabaseInterface<Double> getMoneyDatabaseInterface() {
-        return moneyDatabaseInterface;
-    }
+	private boolean pluginEnabled = false;
 
-    public ConfigHandler getConfigurationHandler() {
-        return configHandler;
-    }
+	private static SoundHandler soundHandler;
 
-    public DatabaseManagerInterface getDatabaseManagerInterface() {
-        return databaseManager;
-    }
+	private static ReloadCommand reloadCommand;
 
-    public SoundHandler getSoundHandler() {
-        return soundHandler;
-    }
+	private static BalanceCommand balanceCommand;
 
-    public ReloadCommand getReloadCmd() {
-        return reloadCommand;
-    }
+	private static SetCommand setCommand;
 
-    public BalanceCommand getBalanceCmd() {
-        return balanceCommand;
-    }
+	private static DepositCommand depositCommand;
 
-    public SetCommand getSetCmd() {
-        return setCommand;
-    }
+	private static WithdrawCommand withdrawCommand;
 
-    public DepositCommand getDepositCmd() {
-        return depositCommand;
-    }
+	private static InterestHandler interestHandler;
 
-    public WithdrawCommand getWithdrawCmd() {
-        return withdrawCommand;
-    }
+	private static InterestCommand interestCommand;
 
-    public InterestHandler getInterestHandler() {
-        return interestHandler;
-    }
+	public String version = "";
 
-    public InterestCommand getInterestCmd() {
-        return interestCommand;
-    }
+	public void onEnable() {
+		logger = getLogger();
+		
+		// Check Server Version
+		if (!getServerVersion()) {
+			logger.log(Level.SEVERE, "Not supported version, disabling plugin!");
+			getServer().getPluginManager().disablePlugin((Plugin) this);
+			return;
+		}
+		
+		// Check Vault
+		if (!setupVault()) {
+			logger.log(Level.SEVERE, "Vault not found, disabling plugin!");
+			getServer().getPluginManager().disablePlugin((Plugin) this);
+			return;
+		}
+		
+		// Check Economy		
+		if (!setupEconomy()) {
+			logger.log(Level.SEVERE, "Economy System not found, disabling plugin!");
+			getServer().getPluginManager().disablePlugin((Plugin) this);
+			return;
+		}
+		
+		// Check Permissions
+		if (!setupPermissions()) {
+			logger.log(Level.SEVERE, "Permissions System not found, disabling plugin!");
+			getServer().getPluginManager().disablePlugin((Plugin) this);
+			return;
+		}
+		
+		String[] serverVersion = Bukkit.getBukkitVersion().split("-");
+		logger.log(Level.WARNING, "If you found a bug while using this plugin in " + serverVersion[0] + " kindly report it!");
+		
+		configHandler = new ConfigHandler(this);
+		soundHandler = new SoundHandler(this);
+		if (configHandler.getString("DataSource.backend").equalsIgnoreCase("mysql")) {
+			logger.log(Level.INFO, "Using MySQL as DataSource");
+			this.databaseManager = (DatabaseManagerInterface) new DatabaseManagerMysql(this);
+			this.moneyDatabaseInterface = (UserdataDatabaseInterface<Double>) new BankSystemMysqlInterface(this);
+		} else if (configHandler.getString("DataSource.backend").equalsIgnoreCase("flatfile")) {
+			logger.log(Level.INFO, "Using FlatFile as DataSource");
+			if (!(new File("plugins" + System.getProperty("file.separator") + getDescription().getName() + System.getProperty("file.separator") + "userdata")).exists()) (new File("plugins" + System.getProperty("file.separator") + getDescription().getName() + System.getProperty("file.separator") + "userdata")).mkdir();
+			logger.log(Level.INFO, "FlatFile Loaded successfully");
+			this.databaseManager = (DatabaseManagerInterface) new DatabaseManagerFlatFile(this);
+			this.moneyDatabaseInterface = (UserdataDatabaseInterface<Double>) new BankSystemFlatFileInterface(this);
+		} else {
+			logger.log(Level.SEVERE, "{0} DataSource not found!", configHandler.getString("DataSource.backend"));
+			logger.log(Level.SEVERE, "Using FlatFile as DataSource instead");
+			if (!(new File("plugins" + System.getProperty("file.separator") + getDescription().getName() + System.getProperty("file.separator") + "userdata")).exists()) (new File("plugins" + System.getProperty("file.separator") + getDescription().getName() + System.getProperty("file.separator") + "userdata")).mkdir();
+			logger.log(Level.INFO, "FlatFile Loaded successfully");
+			this.databaseManager = (DatabaseManagerInterface) new DatabaseManagerFlatFile(this);
+			this.moneyDatabaseInterface = (UserdataDatabaseInterface<Double>) new BankSystemFlatFileInterface(this);
+		}
+		reloadCommand = new ReloadCommand(this);
+		balanceCommand = new BalanceCommand(this);
+		setCommand = new SetCommand(this);
+		depositCommand = new DepositCommand(this);
+		withdrawCommand = new WithdrawCommand(this);
+		interestHandler = new InterestHandler(this);
+		interestCommand = new InterestCommand(this);
+		PluginManager pluginManager = getServer().getPluginManager();
+		pluginManager.registerEvents(new PlayerListener(this), (Plugin) this);
+		CommandHandler commandHandler = new CommandHandler(this);
+		getCommand("bank").setExecutor(commandHandler);
+		
+		// Check PlaceholderAPI
+		if (!setupPlaceholderAPI()) {
+			logger.log(Level.WARNING, "PlaceholderAPI not found, disabling placeholders!");
+		}
+		
+		this.pluginEnabled = true;
+		
+		new UpdateChecker(this, 61580).getVersion(version -> {
+			logger.log(Level.INFO, "Checking for Updates...");
+			if (this.getDescription().getVersion().equalsIgnoreCase(version)) {
+				logger.log(Level.INFO, "No new version available");
+			} else {
+				logger.log(Level.WARNING, "An update for {0} ({1}) is available! You are still running BankSystem {2}.", new Object[] { getDescription().getName(), version, getDescription().getVersion() });
+				logger.log(Level.WARNING, "Download it here: https://www.spigotmc.org/resources/1-8-1-12-banksystem.61580/");
+			}
+		});
+	}
+
+	public void onDisable() {
+		if (this.pluginEnabled == true) {
+			Bukkit.getScheduler().cancelTasks((Plugin) this);
+			HandlerList.unregisterAll((Plugin) this);
+			if (this.databaseManager.getConnection() != null) {
+				logger.log(Level.INFO, "Closing MySQL connection...");
+				this.databaseManager.closeDatabase();
+			}
+		}
+		logger.log(Level.INFO, "Disabled {0} {1}!", new Object[] { getDescription().getName(), getDescription().getVersion() });
+	}
+
+	private boolean getServerVersion() {
+		String[] serverVersion = Bukkit.getBukkitVersion().split("-");
+		if (serverVersion[0].matches("^(1.[7-8])+(.[0-9])?$")) {
+			this.is18Server = true;
+			return true;
+		}
+		
+		if (serverVersion[0].matches("^(1.9)+(.[0-9])?$")) {
+			this.is19Server = true;
+			return true;
+		}
+		
+		if (serverVersion[0].matches("^(1.10)+(.[0-9])?$")) {
+			this.is110Server = true;
+			return true;
+		}
+		
+		if (serverVersion[0].matches("^(1.11)+(.[0-9])?$")) {
+			this.is111Server = true;
+			return true;
+		}
+		
+		if (serverVersion[0].matches("^(1.12)+(.[0-9])?$")) {
+			this.is112Server = true;
+			return true;
+		}
+		
+		if (serverVersion[0].matches("^(1.13)+(.[0-9])?$")) {
+			this.is113Server = true;
+			return true;
+		}
+		
+		if (serverVersion[0].matches("^(1.14)+(.[0-9])?$")) {
+			this.is114Server = true;
+			return true;
+		}
+		
+		if (serverVersion[0].matches("^(1.15)+(.[0-9])?$")) {
+			this.is115Server = true;
+			return true;
+		}
+		return false;
+	}
+
+	private boolean setupPlaceholderAPI() {
+		if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+			new PlaceholderHandler(this).register();
+			logger.log(Level.INFO, "PlaceholderAPI hooked.");
+			return true;
+		}
+		return false;
+	}
+	
+	private boolean setupVault() {
+		if (getServer().getPluginManager().getPlugin("Vault") == null) return false;
+		return true;
+	}
+
+	private boolean setupEconomy() {
+		RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
+		if (rsp == null) return false;
+		econ = (Economy) rsp.getProvider();
+		logger.log(Level.INFO, "Economy provider: {0}", ((Economy) rsp.getProvider()).getName());
+		return (econ != null);
+	}
+
+	private boolean setupPermissions() {
+		RegisteredServiceProvider<Permission> rsp = getServer().getServicesManager().getRegistration(Permission.class);
+		if (rsp == null) return false;
+		perms = (Permission) rsp.getProvider();
+		logger.log(Level.INFO, "Permission provider: {0}", ((Permission) rsp.getProvider()).getName());
+		return (perms != null);
+	}
+
+	public UserdataDatabaseInterface<Double> getMoneyDatabaseInterface() {
+		return this.moneyDatabaseInterface;
+	}
+
+	public ConfigHandler getConfigurationHandler() {
+		return configHandler;
+	}
+
+	public DatabaseManagerInterface getDatabaseManagerInterface() {
+		return this.databaseManager;
+	}
+
+	public SoundHandler getSoundHandler() {
+		return soundHandler;
+	}
+
+	public ReloadCommand getReloadCmd() {
+		return reloadCommand;
+	}
+
+	public BalanceCommand getBalanceCmd() {
+		return balanceCommand;
+	}
+
+	public SetCommand getSetCmd() {
+		return setCommand;
+	}
+
+	public DepositCommand getDepositCmd() {
+		return depositCommand;
+	}
+
+	public WithdrawCommand getWithdrawCmd() {
+		return withdrawCommand;
+	}
+
+	public InterestHandler getInterestHandler() {
+		return interestHandler;
+	}
+
+	public InterestCommand getInterestCmd() {
+		return interestCommand;
+	}
 }
