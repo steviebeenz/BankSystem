@@ -1,0 +1,18 @@
+version: 2.1
+
+orbs:
+  maven: circleci/maven@0.0.12
+  discord: antonioned/discord@0.1.0
+
+workflows:
+  maven_test:
+    jobs:
+      # checkout, build, test, and upload test results
+      - maven/test
+
+      steps:
+        - discord/status:
+            fail_only: false
+            failure_message: "**${CIRCLE_USERNAME}**'s build: **${CIRCLE_JOB}** failed."
+            webhook: "${DISCORD_STATUS_WEBHOOK}"
+            success_message: "**${CIRCLE_USERNAME}**'s build: **${CIRCLE_JOB}** success."

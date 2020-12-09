@@ -1,0 +1,40 @@
+name: BankSystem
+version: 4.0.0
+description: BankSystem allows you to safely store your money in other to avoid overspending. For example this can be used for your market shops so you don't end up losing all your money if your shop have some very favorable trades.
+
+author: daishitie
+website: https://www.spigotmc.org/resources/banksystem.61580
+api-version: 1.14
+
+main: com.daishitie.banksystem.BankSystem
+load: STARTUP
+
+depend: [Vault]
+softdepend: [PlaceholderAPI]
+
+commands:
+    bank:
+        description: See the list of all available commands.
+
+permissions:
+    banksystem.sign.use:
+        description: Allows to use the Bank sign.
+        default: true
+    banksystem.command.balance:
+        description: Check your bank balance.
+        default: true
+    banksystem.command.deposit:
+        description: Deposit money to your bank.
+        default: true
+    banksystem.command.withdraw:
+        description: Withdraw money from your bank.
+        default: true
+    banksystem.command.interest:
+        description: Checks the cooldown until next interest.
+        default: true
+    banksystem.admin:
+        description: Allows creating and removing BankSystem signs.
+        default: op
+    banksystem.bypass.cooldown:
+        description: Allows to bypass BankSystem command cooldown.
+        default: op

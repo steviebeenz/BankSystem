@@ -1,0 +1,149 @@
+# Default config file for BankSystem
+# Author: daishitie
+# Version: 4.0.0
+
+# If you want to use special characters in this document, such as accented letters, you MUST save the file as UTF-8, not ANSI.
+# If you receive an error when BankSystem loads, ensure that:
+#   - No tabs are present: YAML only allows spaces
+#   - Indents are correct: YAML hierarchy is based entirely on indentation
+#   - You have "escaped" all apostrophes in your text: If you want to write "don't", for example, write "don''t" instead (note the doubled apostrophe)
+#   - Text with symbols is enclosed in single or double quotation marks
+
+############################################################
+# +------------------------------------------------------+ #
+# |                       Database                       | #
+# +------------------------------------------------------+ #
+############################################################
+
+DataSource:
+    # What type of database do you want to use?
+    # Valid values: FlatFile, MYSQL
+    backend: FlatFile
+    # Database host address
+    mySQLHost: '127.0.0.1'
+    # Database port
+    mySQLPort: '3306'
+    # Connect to MySQL database over SSL
+    mySQLUseSSL: false
+    # Username to connect to the MySQL database
+    mySQLUsername: 'root'
+    # Password to connect to the MySQL database
+    mySQLPassword: 'password'
+    # Database Name
+    mySQLDatabase: 'banksystem'
+    # Table of the database
+    mySQLTablename: 'tbl_banksystem_userdata'
+
+############################################################
+# +------------------------------------------------------+ #
+# |                   General Settings                   | #
+# +------------------------------------------------------+ #
+############################################################
+
+Settings: 
+    # Enable/disable update checker when admin join the server
+    updateChecker: true
+    # Enable/disable override default balance command in-game
+    # /bal and /balance
+    overrideBalanceCommand: true
+    # Enable/disable deposit/withdraw all 
+    # /bank withdraw all|*
+    # /bank deposit all|*
+    withdrawDepositAllEnabled: true
+    # Enable/disable sound effects
+    soundEnabled: true
+    # Money Format
+    # Accepted Values (IMPORTANT):
+    #   - #,###.## | #,### | #.##
+    #   - #,##0.00 | #,##0 | 0.00
+    # Default: #,##0.00
+    moneyFormat: "#,##0.00"
+    # Money bank currency
+    currency: "$"
+    # Maximum amount of money on player's account
+    bankLimit: 10000000
+    # Maximum amount of money in player's pocket
+    pocketLimit: 10000000
+    # Amount of time in milliseconds a player has to wait between interactions.
+    # 1000 milliseconds = 1 second
+    interactCooldown: 1000
+    # Interest settings
+    # Enable bank accounts interest
+    # Valid values: true, false
+    interestEnabled: false
+    # Interest amount in percentage
+    # Example values: 0.05% | 0.5% | 5%
+    interestPercentage: 0.05%
+    # Cooldown between interest credit in minutes.
+    # Default value: 60 minutes
+    interestCooldown: 60
+
+############################################################
+# +------------------------------------------------------+ #
+# |                    Sign Settings                     | #
+# +------------------------------------------------------+ #
+############################################################ 
+
+Sign:
+    # Color formats are not supported in balance, deposit, withdraw.
+    balance: Balance
+    deposit: Deposit
+    withdraw: Withdraw
+    # 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+    # a, b, c, d, e, f
+    # For more details visit: https://www.colorschemer.com/minecraft-color-codes/
+    color: 4
+
+############################################################
+# +------------------------------------------------------+ #
+# |                  Message Settings                    | #
+# +------------------------------------------------------+ #
+############################################################
+
+Messages:
+    # %player% : The player.
+    # %balance% : Bank balance.
+    # %pocket% : Pocket balance.
+    # %total% : Total balance.
+    # %amount% : Amount of set/interest/deposit/success.
+    # %interestCooldown% : Shows the cooldown until next interest.
+    prefix: '&8[&eBankSystem&8] '
+    console: '&cYou can''t run this command from console!'
+    playerOffline: '&c%player% is currently offline!'
+    signCreateSuccess: '&aCreated sign succesfully!'
+    signRemoveSuccess: '&aSign removed succesfully!'
+    signError: '&cCould not create bank sign!'
+    noPermission: '&cYou''re not allowed to do this.'
+    noBank: '&a%player% &cdoes not have an account!'
+    sneakBreak: '&cSneak to break the Bank sign!'
+    notEnoughMoney: '&cSorry you don''t have that much.'
+    notSurvival: '&cYou can only use this sign in survival.'
+    depositSuccess: '&7You have deposited &a%amount% &7into your bank!'
+    withdrawSuccess: '&7You withdrew &a%amount% &7into your bank!'
+    reachedBankLimit: '&cReached bank account limit!'
+    reachedPocketLimit: '&cReached pocket money limit!'
+    tooFastInteract: '&cYou can''t interact this often.'
+    setCommand: '&7%player% bank balance set to: &a%amount%'
+    interest: '&7Interest credited: &a%amount%'
+    interestCommand: '&7Next interest in &a%interestCooldown%'
+    interestDisabled: '&cInterest is disabled!'
+    invalidAmount: '&cYou have entered an invalid amount. Possible denominations include only Numerical Characters and/or a Decimal Point (e.g. 1000, 1.0, 1.00).'
+    reloadError: '&cError reloading config!'
+    reloadSuccess: '&aConfig reloaded succesfully!'
+    balance:
+        - '&8[&7Bank System &eBalance&8]'
+        - '&7Bank &e%balance%'
+        - '&7Pocket &e%pocket%'
+        - '&7Total &e%total%'
+    help:
+        - '&8[&7Bank System &eHelp&8]'
+        - '&7/bank balance&f: Check your bank balance.'
+        - '&7/bank deposit <amount | all | *>&f: Deposit money to your bank.'
+        - '&7/bank withdraw <amount | all | *>&f: Withdraw money from your bank.'
+        - '&7/bank interest&f: Checks the cooldown until next interest.'
+    admin:
+        - ''
+        - '&8[&7Bank System &eAdmin Help&8]'
+        - '&7/bank balance <player>&f: Check online players bank balance.'
+        - '&7/bank set <player> <amount>&f: Set online players bank balance.'
+        - '&7/bank reload&f: Reload BankSystem config file.'
