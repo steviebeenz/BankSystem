@@ -1,18 +1,47 @@
 version: 2.1
 
 orbs:
-  maven: circleci/maven@0.0.12
   discord: antonioned/discord@0.1.0
 
-workflows:
-  maven_test:
-    jobs:
-      # checkout, build, test, and upload test results
-      - maven/test
+jobs:
+  build:
+    docker:
+      - image: circleci/openjdk:stretch
 
-      steps:
-        - discord/status:
-            fail_only: false
-            failure_message: "**${CIRCLE_USERNAME}**'s build: **${CIRCLE_JOB}** failed."
-            webhook: "${DISCORD_STATUS_WEBHOOK}"
-            success_message: "**${CIRCLE_USERNAME}**'s build: **${CIRCLE_JOB}** success."
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "pom.xml" }}
+            - v1-dependencies-
+      - run: ./mvnw -Dmaven.test.skip=true package
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - target/
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: v1-dependencies-{{ checksum "pom.xml" }}
+      - discord/status:
+          fail_only: false
+          failure_message: "**${CIRCLE_USERNAME}**'s build: **${CIRCLE_JOB}** failed."
+          webhook: "${DISCORD_STATUS_WEBHOOK}"
+          success_message: "**${CIRCLE_USERNAME}**'s build: **${CIRCLE_JOB}** success."
+
+  test:
+    docker:
+      - image: circleci/openjdk:stretch
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./target
+      - run: ./mvnw test
+
+workflows:
+  build-then-test:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build
