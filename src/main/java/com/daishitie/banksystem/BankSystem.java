@@ -202,7 +202,6 @@ public class BankSystem extends JavaPlugin {
         }
 
         logger.log(Level.SEVERE, "Not supported version, disabling plugin!");
-        getServer().getPluginManager().disablePlugin(this);
         return false;
     }
 
